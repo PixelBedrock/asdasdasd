@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@300..800&display=swap">
+        <style>
+            body {
+                --grid-size: 4;
+                font-family: 'Funnel Sans';
+                font-size: 16px;
+            }
+
+            div#grid {
+                border: solid 1px black;
+                display: grid;
+                grid-template-columns: repeat(var(--grid-size), 64px);
+                grid-template-rows: repeat(var(--grid-size), 64px);
+                margin-top: 16px;
+                width: fit-content;
+            }
+
+            div#grid div {
+                align-items: center;
+                cursor: pointer;
+                display: flex;
+                /* font-feature-settings: 'tnum' 1, 'ss01' 1, 'zero' 1; */
+                font-size: 24px;
+                justify-content: center;
+                transition: transform .2s ease;
+                user-select: none;
+            }
+
+            div#grid div:hover {
+                border: solid 2px #0088ff;
+            }
+
+            div#grid div:hover:active {
+                background-color: #0088ff;
+                color: white;
+            }
+
+            .move-n { transform: translateY(-64px); }
+            .move-w { transform: translateX(-64px); }
+            .move-s { transform: translateY(64px); }
+            .move-e { transform: translateX(64px); }
+        </style>
+    </head>
+    <body>
+        <select>
+            <option value="3">Easy (3x3)</option>
+            <option selected value="4">Normal (4x4)</option>
+            <option value="5">Hard (5x5)</option>
+        </select>
+        <button>start! start! start! start! start! start!</button>
+        <div id="grid"></div>
+        <script>
+            let started = false, elapsed = 0, moves = 0;
+
+            /**
+             * thank you stakc overlfow!
+             * https://stackoverflow.com/a/12646864
+             */
+            function shufffffffl(arayy) {
+                for (let i = arayy.length - 1; i >= 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arayy[i], arayy[j]] = [arayy[j], arayy[i]];
+                }
+            }
+
+            const grid = document.querySelector("div#grid");
+            const difficultypickerthingy = document.querySelector("select");
+            const startstartstartstartstartstart = document.querySelector("button");
+            startstartstartstartstartstart.addEventListener("click", function() {
+                console.log(startstartstartstartstartstart.innerText);
+                grid.innerHTML = "";
+                const difficulty = Number(difficultypickerthingy.value);
+
+                document.body.style.setProperty("--grid-size", difficulty);
+
+                for (let i = 0; i < (difficulty * difficulty) - 1; i++) {
+
+                    const itemitemitem = document.createElement("div");
+                    itemitemitem.innerText = i + 1;
+                    itemitemitem.tabIndex = 0;
+                    itemitemitem.setAttribute("data-nubm", i + 1);
+
+                    itemitemitem.addEventListener("click", function() {
+                        if (!started) {
+                            started = true;
+                            setInterval(() => {
+                                if (!started) return;
+                                elapsed += 1;
+                                document.getElementById("elapsed").innerText = `${elapsed} seconds | ${moves} moves`;
+                            }, 1e3);
+                        }
+                        moves += 1;
+
+                        const burn = Array.from(grid.children);
+                        const findme = burn.indexOf(itemitemitem);
+
+                        if (burn[findme - difficulty] && burn[findme - difficulty].nodeName == "SPAN") {
+                            itemitemitem.classList.add("move-n");
+                            [burn[findme], burn[findme - difficulty]] = [burn[findme - difficulty], burn[findme]];
+                        } else if (burn[findme - 1] && burn[findme - 1].nodeName == "SPAN") {
+                            if (Math.floor(findme / difficulty) !== Math.floor((findme - 1) / difficulty)) return;
+                            itemitemitem.classList.add("move-w");
+                            [burn[findme], burn[findme - 1]] = [burn[findme - 1], burn[findme]];
+                        } else if (burn[findme + difficulty] && burn[findme + difficulty].nodeName == "SPAN") {
+                            itemitemitem.classList.add("move-s");
+                            [burn[findme], burn[findme + difficulty]] = [burn[findme + difficulty], burn[findme]];
+                        } else if (burn[findme + 1] && burn[findme + 1].nodeName == "SPAN") {
+                            if (Math.floor(findme / difficulty) !== Math.floor((findme + 1) / difficulty)) return;
+                            itemitemitem.classList.add("move-e");
+                            [burn[findme], burn[findme + 1]] = [burn[findme + 1], burn[findme]];
+                        }
+
+                        setTimeout(() => {
+                            itemitemitem.classList.remove("move-n", "move-w", "move-e", "move-s");
+                            grid.replaceChildren(...burn);
+                            itemitemitem.focus();
+
+                            const toCheck = Array.from(grid.children);
+                            const passes = [];
+
+                            for (let i = 0; i < toCheck.length; i++) {
+                                toCheck[i].nodeName == "DIV" &&
+                                    passes.push(toCheck[i].dataset.nubm == i + 1);
+                            }
+
+                            if (passes.filter(pass => !pass).length === 0) {
+                                alert("WOOO YOU DID IT WOOOOOOOOOO");
+                                started = false;
+                            }
+                        }, 2e2);
+                    });
+
+                    itemitemitem.addEventListener("keydown", event => {
+                        event.code == "Space" && itemitemitem.dispatchEvent(new MouseEvent("click"));
+                    });
+
+                    grid.appendChild(itemitemitem);
+                }
+
+                const empty = document.createElement("span");
+                grid.appendChild(empty);
+
+
+                // RANDOMISISIESIEEEE
+                let childr = Array.from(grid.children);
+                shufffffffl(childr);
+                grid.replaceChildren(...childr);
+            });
+        </script>
+        <br>
+        <span id="elapsed"></span>
+    </body>
+</html>
